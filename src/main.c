@@ -2,16 +2,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <getopt.h>
-
-typedef enum {
-    ENCRYPT=1,
-    DECRYPT,
-} action_e;
+#include "cryper.h"
+#include "key.h"
 
 typedef struct {
     char *file_name;
     char *key;
-    action_e action;
+    actions_e action;
 }options_t;
 
 static void parse_args(int argc, char **argv, options_t *opt)
@@ -43,7 +40,7 @@ static void parse_args(int argc, char **argv, options_t *opt)
 		}
     }
 
-	if (err | opt->file_name == NULL | opt->key == NULL | (opt->action == 0)) {	
+	if (err | (opt->file_name == NULL) | (opt->key == NULL) | (opt->action == 0)) {	
 		fprintf(stderr, usage, argv[0]);
 		exit(1);
     }
@@ -53,5 +50,15 @@ int main(int argc,char **argv)
 {
     options_t opt;
     parse_args(argc, argv, &opt);
+
+    uint64_t key = 0;
+    for (int i = 0; i < 8; i++) {
+        if (strlen(opt.key) >= i) {
+            key |= opt.key[i] << (i * 8);
+        }
+    }
+
+    sub_keys_t keys;
+    get_sub_keys(key, opt.action, &keys);
 
 }
