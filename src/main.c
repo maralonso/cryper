@@ -54,7 +54,7 @@ int main(int argc,char **argv)
     uint64_t key = 0;
     for (int i = 0; i < 8; i++) {
         if (strlen(opt.key) >= i) {
-            key |= opt.key[i] << (i * 8);
+            key |= (uint64_t)opt.key[i] << (i * 8);
         }
     }
 
