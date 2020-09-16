@@ -44,6 +44,6 @@ void get_sub_keys(uint64_t key, actions_e action, sub_keys_t *keys)
             cipher_right = (cipher_right << 1) | ((cipher_right & 0x8000000) >> 27);
         }
 
-        keys->key[i] = permuted(cipher_left | (cipher_right << 28), PERMUTED_CHOISE_2, PERMUTED_2_LEN); 
+        keys->key[i] = permute(cipher_left | (cipher_right << 28), PERMUTED_CHOISE_2, PERMUTED_2_LEN); 
    }
 }
