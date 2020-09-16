@@ -1,4 +1,5 @@
 #include "key.h"
+#include "utils.h"
 
 #define PERMUTED_1_LEN  56
 #define PERMUTED_1_MASK 0x0FFFFFFF
@@ -27,31 +28,9 @@ static const uint8_t  PERMUTED_CHOISE_2[PERMUTED_2_LEN] = {
     46, 42, 50, 36, 29, 32
 };
 
-static uint64_t permuted_choise_1(uint64_t input)
-{
-    uint64_t permuted = 0;
-    for (int i = 0; i < PERMUTED_1_LEN; i++) {
-        if (input & (1 << PERMUTED_CHOISE_1[i])) {
-            permuted |= (1 << i);
-        }
-    }
-    return permuted;
-}
-
-static uint64_t permuted_choise_2(uint64_t input)
-{
-    uint64_t permuted = 0;
-    for (int i = 0; i < PERMUTED_2_LEN; i++) {
-        if (input & (1 << PERMUTED_CHOISE_2[i])) {
-            permuted |= (1 << i);
-        }
-    }
-    return permuted;
-}
-
 void get_sub_keys(uint64_t key, actions_e action, sub_keys_t *keys)
 {
-   uint64_t cipher = permuted_choise_1(key); 
+   uint64_t cipher = permute(key, PERMUTED_CHOISE_1, PERMUTED_1_LEN); 
 
    uint32_t cipher_left = cipher & 0x0FFFFFFF;
    uint32_t cipher_right = (cipher >> 27) & 0x0FFFFFFF;
@@ -65,8 +44,6 @@ void get_sub_keys(uint64_t key, actions_e action, sub_keys_t *keys)
             cipher_right = (cipher_right << 1) | ((cipher_right & 0x8000000) >> 27);
         }
 
-        keys->key[i] = permuted_choise_2(cipher_left | (cipher_right << 28)); 
+        keys->key[i] = permuted(cipher_left | (cipher_right << 28), PERMUTED_CHOISE_2, PERMUTED_2_LEN); 
    }
 }
-
-
