@@ -4,12 +4,16 @@
 #include <getopt.h>
 #include "cryper.h"
 #include "key.h"
+#include "des.h"
+
+#define OUTPUT_FILE "cipher.txt"
 
 typedef struct {
     char *file_name;
     char *key;
     actions_e action;
 }options_t;
+
 
 static void parse_args(int argc, char **argv, options_t *opt)
 {
@@ -61,4 +65,26 @@ int main(int argc,char **argv)
     sub_keys_t keys;
     get_sub_keys(key, opt.action, &keys);
 
+    FILE *file = fopen(opt.file_name, "r");
+    if (file == NULL) {
+		fprintf(stderr, "Could not open file %s", opt.file_name);
+		exit(1);
+    }
+
+    FILE *cipher = fopen(OUTPUT_FILE, "w");
+    if (cipher == NULL) {
+		fprintf(stderr, "Could not open file %s", OUTPUT_FILE);
+		exit(1);
+    }
+
+    uint64_t block;
+    size_t bytes = fread(&block, 1, sizeof(uint64_t), file);
+    while (bytes > 0) {
+        uint64_t cipher_data = cipher_block(block, keys);  
+        fwrite(&cipher_data, 1, sizeof(uint64_t), cipher);
+        bytes = fread(&block, sizeof(uint64_t), 1, file);
+    }
+
+    fclose(cipher);
+    fclose(file);
 }

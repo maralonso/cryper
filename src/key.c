@@ -28,6 +28,15 @@ static const uint8_t  PERMUTED_CHOISE_2[PERMUTED_2_LEN] = {
     46, 42, 50, 36, 29, 32
 };
 
+static void reverse_keys(sub_keys_t *keys)
+{
+    for (int i = 0; i < 8; i++) {
+        uint64_t aux = keys->key[i];
+        keys->key[i] = keys->key[15 -i];
+        keys->key[15 - i] = aux;
+    }
+}
+
 void get_sub_keys(uint64_t key, actions_e action, sub_keys_t *keys)
 {
    uint64_t cipher = permute(key, PERMUTED_CHOISE_1, PERMUTED_1_LEN); 
@@ -44,6 +53,11 @@ void get_sub_keys(uint64_t key, actions_e action, sub_keys_t *keys)
             cipher_right = (cipher_right << 1) | ((cipher_right & 0x8000000) >> 27);
         }
 
-        keys->key[i] = permute(cipher_left | (cipher_right << 28), PERMUTED_CHOISE_2, PERMUTED_2_LEN); 
+        keys->key[i] = permute(cipher_left | ((uint64_t)cipher_right << 28), PERMUTED_CHOISE_2, PERMUTED_2_LEN); 
+        keys->key[i] &= 0xFFFFFFFFFFFF;
+   }
+
+   if (action == DECRYPT) {
+       reverse_keys(keys);
    }
 }

@@ -94,7 +94,7 @@ static uint32_t sustitute(uint64_t input)
     uint32_t sus = 0;
     for (int i = 0; i < N_S_BOXES; i++) {
         uint8_t block = (input >> (i * 6)) & 0x3F;
-        uint8_t row = (((block >> 4) & 0x1)) | (block & 0x01) ;
+        uint8_t row = (((block >> 4) & 0x2)) | (block & 0x01) ;
         uint8_t col = (block >> 1) & 0x0F;
 
         uint8_t table_entry = S_BOX[i][row][col] & 0x0F;
@@ -116,10 +116,13 @@ uint64_t cipher_block(uint64_t block, sub_keys_t keys)
 
         uint32_t cipher_data = sustitute(data);
         cipher_data = permute(cipher_data, STRAIGHT_PERMUTATION, STRAIGHT_PERMUTATION_LEN);
+        left_block ^= cipher_data;
 
-        uint32_t aux = right_block;
-        right_block = cipher_data ^ left_block;
-        left_block = aux;
+        if (i != 15) {
+            uint32_t aux = right_block;
+            right_block = left_block;
+            left_block = aux;
+        }
     }
 
     uint64_t cipher = left_block | ((uint64_t)right_block << 32);
